@@ -6,12 +6,10 @@ interface Props {
 }
 
 const ResultsBar = (props: Props) => {
-
-
     return(
         <View style={styles.container}>
             <Text style={styles.text}>
-                {props.resultsCount} results
+                {props.resultsCount === undefined ? '0' : props.resultsCount} results
             </Text>
           </View>
     )
@@ -20,7 +18,7 @@ const ResultsBar = (props: Props) => {
 const styles = StyleSheet.create({
   container: {
     width:'100%',
-    height:86,
+    height:75,
     justifyContent:'center',
     padding:10,
     borderBottomWidth:1,
