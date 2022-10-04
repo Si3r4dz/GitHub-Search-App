@@ -26,7 +26,7 @@ const App = () => {
   const [usersList, setUsersList ] = useState([])
   const [reposList, setReposList ] = useState([])
   const [totalItemsCount, setTotalItemsCount] = useState(String) 
-  const apiKey = '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'
+  const apiKey = ''
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
