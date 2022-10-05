@@ -7,120 +7,107 @@ import {
   Text,
   useColorScheme,
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
 
-import {getUserData, getReposData} from './src/utils/gitApi'
+import {fetchUserData, fetchReposData} from './src/utils/gitApi'
 import SearchBar from './src/components/searchBar';
 import ResultsBar from './src/components/resultsBar';
-import RepoSvg from './src/assets/Vector.svg'
-import StarSvg from './src/assets/star.svg'
-import gitColors from './colors.json'
-
+import RepoListElement from './src/components/repoListElement';
+import UserListElement from './src/components/userListElement';
 
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  const [searchText, setSearchText] = useState(String)
+  const [searchText, setSearchText] = useState('')
   const [usersList, setUsersList ] = useState([])
   const [reposList, setReposList ] = useState([])
-  const [totalItemsCount, setTotalItemsCount] = useState(String) 
-  const apiKey = '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 '
+  const [mixedList, setMixedList ] = useState([])
+  const [totalItemsCount, setTotalItemsCount] = useState('0') 
+  const apiKey = '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'
+  const exampleSearchText: string = 'elpassion'
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  interface ApiRepoItem {
-    name:String,
-    full_name: String,
-    owner:{
-      login: String,
-    },
-    description: String,
-    updated_at: Date,
-    language: String,
-    license:{
-      name: String
-    },
-    stargazers_count: String,
-    id: Number,
-    has_issues: boolean,
-    open_issues: Number
-  }
-  interface ApiUserItem {
-    name:String,
-    full_name: String,
-    owner:{
-      login: String,
-    },
-    description: String,
-    updated_at: Date,
-    language: String,
-    license:{
-      name: String
-    },
-    stargazers_count: String,
-    id: Number,
-    has_issues: boolean,
-    open_issues: Number
-  }
+  
 
   interface GitData {
     total_count : number,
     items:[],
     incomplete_results: boolean,
   }
+  interface element {
+      id: number
+  }
+
 
   const mixResults = () => {
-    const oneArray = usersList.concat(reposList)
-    console.log(oneArray)
-    return 0;
-  }
-
-  const calculateDate = (date: Date) => {
-    const lastUpdateDate = new Date(date)
-    const now = new Date()
-    const difference = now.getTime() - lastUpdateDate.getTime()
-    const result = Math.ceil(difference / (1000 * 3600 * 24))
-    return result
+    let oneArray = usersList.concat(reposList)
+    oneArray = oneArray.sort((a: element, b: element) =>{
+        return a.id - b.id;
+    })
+    setMixedList(oneArray)
   }
   
-  const getLanguageColor = (lang: String) => {
-    let colorHex
-    Object.entries(gitColors).filter( ([ key,value ]) =>{ if(key === lang) colorHex = value.color })
-    return colorHex
+
+  const getUserData = async (querry: String = exampleSearchText) =>{
+      let userData: GitData
+      const usersResponse = await fetchUserData(querry, apiKey)
+      if(usersResponse === 'error'){
+        console.log('Error with fetching users')
+        setTotalItemsCount(totalItemsCount)
+      }
+      else{
+        userData = usersResponse
+        setTotalItemsCount((current) => (parseInt(current) + userData.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+        if(usersResponse.items.length > 0) setUsersList(usersResponse.items)
+        return true
+      }
   }
-  
-  const fetchData = async (querry: String = "Si3r4dz") =>{
-      const reposResponse: GitData = await getReposData(querry, apiKey)
-      const usersResponse: GitData = await getUserData(querry, apiKey)
-      setTotalItemsCount((usersResponse?.total_count + reposResponse?.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-      if(usersResponse.items.length > 0) setUsersList(usersResponse.items)
-      if(reposResponse.items.length > 0) setReposList(reposResponse.items)
-      mixResults()
+
+  const getReposData = async (querry: String = exampleSearchText) =>{
+      let reposData: GitData
+      const reposResponse = await fetchReposData(querry, apiKey)
+      if(reposResponse === 'error'){
+        console.log('Error with fetching repos')
+        setTotalItemsCount(totalItemsCount)
+      }
+      else{
+        reposData = reposResponse
+        setTotalItemsCount((current) => (parseInt(current) + reposData.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+        if(reposResponse.items.length > 0) setReposList(reposResponse.items)
+        return true
+      }
   }
 
-  useEffect(() => { 
-    fetchData()
-  }, [])
-
+  useEffect(() => {
+    setTotalItemsCount('0')
+    getUserData()
+    getReposData()
+  }, []) 
   
-
   useEffect(() => {
     const fetchTimeOut = setTimeout(() => {
         if (searchText.length > 2){
-          fetchData(searchText)
+          setTotalItemsCount('0')
+          getUserData(searchText)
+          getReposData(searchText)
       }
     }, 200)
-    
-    
     return () => clearTimeout(fetchTimeOut)
   }, [searchText])
 
+  useEffect(()=>{
+    if(usersList.length > 0 || reposList.length > 0){
+      mixResults()
+    }
+  },[usersList, reposList])
   
 
   return (
@@ -139,97 +126,12 @@ const App = () => {
            resultsCount={totalItemsCount} 
           />
           <ScrollView>
-            {reposList.map( (repo: ApiRepoItem) => {
-              const daysSinceUpdate = calculateDate(repo.updated_at)
-              const langColor = getLanguageColor(repo.language)
+            {mixedList.map( (element) => {
+              
                 return(
-                  <TouchableOpacity 
-                    style={{ 
-                      minHeight:70,
-                      borderBottomWidth:1,
-                      borderBottomColor:'#C4C4C4',
-                      borderBottomLeftRadius:25,
-                      borderBottomRightRadius:25,
-                    }}
-                  > 
-                  <View style={{
-                    flexDirection:'row',
-                    padding:10,
-                  }}>
-
-                    <View style={{
-                      width:30,
-                      height:30,
-                      margin: 5,
-                      justifyContent:'flex-start',
-                      alignItems:'center',
-                    }}>
-                      <RepoSvg />
-                    </View>
-
-                    <View style={{ justifyContent:'center', width:'90%'}}>  
-
-                        <Text style={styles.repoFullName}>
-                          {repo.full_name}
-                        </Text>
-
-                        <Text style={styles.repoDescription}>
-                          {repo.description}
-                        </Text>
-
-                        <View style={{
-                            flexDirection:'row',
-                            width:'95%',
-                            flexWrap:'wrap'
-                          }}
-                        >  
-                          <View style={{ flexDirection:'row', alignItems:'center', maxWidth:'15%', marginRight:'2%'}}>
-                            <StarSvg /> 
-                            <Text style={styles.repoInfoText}>
-                              {repo.stargazers_count}
-                            </Text>
-                          </View>
-
-                          {repo?.language?.length > 0 ? 
-                            <View style={{ flexDirection:'row', marginRight:'2%', alignItems:'center', maxWidth:'50%'}}>
-                              <View style={{...styles.dot, backgroundColor:langColor, }} />
-                              <Text style={styles.repoInfoText}>
-                                {' '}{repo.language} 
-                               </Text>
-                            </View>
-                            :
-                            <></>
-                          }
-                          
-                          {repo.license?.name?.length > 0 ?
-                            <View style={{ flexDirection:'row', marginRight:'1%', alignItems:'center'}}>
-                              <Text style={styles.repoInfoText}>
-                                {repo.license.name}
-                              </Text>
-                            </View>
-                            :
-                            <></>
-                          }
-
-                          <View style={{ flexDirection:'row', marginRight:'1%', alignItems:'center', }}>
-                            <Text style={styles.repoInfoText}>
-                              {'Updated '}{daysSinceUpdate} {'days ago'}
-                            </Text>
-                          </View>
-
-                          {repo.open_issues > 0 ? 
-                            <View style={{ flexDirection:'row', marginRight:'1%', alignItems:'center', }}>
-                              <Text style={styles.repoInfoText}>
-                                {repo.open_issues.toString()} {'issues need help'}
-                              </Text>
-                            </View> 
-                            : <></>
-                          }
-                        </View>
-                    </View>
-                  </View>
-                     
-                  </TouchableOpacity>
+                  <UserListElement 
+                    item={element}
+                  />
                  
                 )
             } )}
