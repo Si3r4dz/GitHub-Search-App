@@ -1,23 +1,29 @@
 import React from "react";
 
 
-export const getUserData = async (querry: String, apiKey: String) =>{
+export const fetchUserData = async (querry: String, apiKey: String) =>{
     const response = fetch(`https://api.github.com/search/users?q=${querry}`,{
         headers:{
             'Authorization':`Bearer ${apiKey}`
         }
     })
     const json = await response;
-    return json.json();
+    if(json.status === 200){
+        return json.json()
+    }
+    else return 'error'
     }
     
-export const getReposData = async (querry: String, apiKey: String) =>{
+export const fetchReposData = async (querry: String, apiKey: String) =>{
     const response = fetch(`https://api.github.com/search/repositories?q=${querry}`,{
         headers:{
             'Authorization':`Bearer ${apiKey}`
         }
     })
     const json = await response;
-    return json.json();
+    if(json.status === 200){
+        return json.json()
+    }
+    else return 'error'
 }
 
