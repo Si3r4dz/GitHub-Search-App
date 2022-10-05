@@ -29,7 +29,7 @@ const App = () => {
   const [reposList, setReposList ] = useState([])
   const [mixedList, setMixedList ] = useState([])
   const [totalItemsCount, setTotalItemsCount] = useState('0') 
-  const apiKey = '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'
+  const apiKey = ''
   const exampleSearchText: string = 'elpassion'
 
   const backgroundStyle = {
