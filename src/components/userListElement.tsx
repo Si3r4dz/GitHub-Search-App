@@ -3,7 +3,8 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,     
+    TouchableOpacity,
+    Image,     
 } from "react-native";
 import RepoSvg from '../assets/Vector.svg'
 import StarSvg from '../assets/star.svg'
@@ -16,12 +17,14 @@ interface Props {
 interface ApiUserItem {
     login: string,
     avatar_url: string,
-    url: string,
+    name: string,
     id: number,
+    location: string,
+    bio: string,
   }
 
 const UserListElement = (props: Props) => {
-
+    console.log(props.item)
     return(
         <TouchableOpacity 
             style={{ 
@@ -44,17 +47,25 @@ const UserListElement = (props: Props) => {
                 justifyContent:'flex-start',
                 alignItems:'center',
                 }}>
-                <RepoSvg />
+                <Image
+                source={{
+                    uri:`${props.item?.avatar_url}`
+                }}
+                style={{
+                    width:20,
+                    height:20,
+                }}
+                ></Image>
                 </View>
 
                 <View style={{ justifyContent:'center', width:'90%'}}>  
 
                     <Text style={styles.repoFullName}>
-                    {props.item.login}
+                    { props.item?.name !== null ? props.item.name : props.item.login}  
                     </Text>
 
                     <Text style={styles.repoDescription}>
-                    {props.item.id.toString()}
+                    {props.item.login}
                     </Text>
 
                     <View style={{
@@ -66,7 +77,7 @@ const UserListElement = (props: Props) => {
                     <View style={{ flexDirection:'row', alignItems:'center', maxWidth:'15%', marginRight:'2%'}}>
                         <StarSvg /> 
                         <Text style={styles.repoInfoText}>
-                        {props.item.url}
+                        {props.item.location}
                         </Text>
                     </View>
 

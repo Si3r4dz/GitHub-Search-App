@@ -1,29 +1,31 @@
 import React from "react";
 
+export const fetchUserData = async (querry: string, apiKey: string) => {
 
-export const fetchUserData = async (querry: String, apiKey: String) =>{
-    const response = fetch(`https://api.github.com/search/users?q=${querry}`,{
+    return fetch(`https://api.github.com/search/users?q=${querry}`,{
         headers:{
             'Authorization':`Bearer ${apiKey}`
         }
     })
-    const json = await response;
-    if(json.status === 200){
-        return json.json()
-    }
-    else return 'error'
-    }
+    .then((res) => res.json())
+}
+
+export const fetchUserDetailsData = async(url: string, apiKey: string) => {
+    return fetch(url,{
+        headers:{
+            'Authorization':`Bearer ${apiKey}`
+        }
+    })
+    .then((res) => res.json())
+}
     
-export const fetchReposData = async (querry: String, apiKey: String) =>{
-    const response = fetch(`https://api.github.com/search/repositories?q=${querry}`,{
+export const fetchReposData = async (querry: string, apiKey: string) => {
+    return fetch(`https://api.github.com/search/repositories?q=${querry}`,{
         headers:{
             'Authorization':`Bearer ${apiKey}`
         }
     })
-    const json = await response;
-    if(json.status === 200){
-        return json.json()
-    }
-    else return 'error'
+    .then((res) =>  {return res.json()} )
+    .catch(() => {return 'error'} )
 }
 

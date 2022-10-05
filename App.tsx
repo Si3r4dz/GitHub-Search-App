@@ -15,7 +15,7 @@ import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
 
-import {fetchUserData, fetchReposData} from './src/utils/gitApi'
+import {fetchUserData, fetchReposData, fetchUserDetailsData} from './src/utils/gitApi'
 import SearchBar from './src/components/searchBar';
 import ResultsBar from './src/components/resultsBar';
 import RepoListElement from './src/components/repoListElement';
@@ -30,7 +30,7 @@ const App = () => {
   const [mixedList, setMixedList ] = useState([])
   const [totalItemsCount, setTotalItemsCount] = useState('0') 
   const apiKey = ''
-  const exampleSearchText: string = 'elpassion'
+  const exampleSearchText: string = 'elPassion'
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -56,25 +56,38 @@ const App = () => {
   }
   
 
-  const getUserData = async (querry: String = exampleSearchText) =>{
+  const getUserData = async (querry: string = exampleSearchText) =>{
       let userData: GitData
       const usersResponse = await fetchUserData(querry, apiKey)
-      if(usersResponse === 'error'){
+      if(usersResponse?.message === 'Bad credentials' || usersResponse?.message === 'Not Found'){
         console.log('Error with fetching users')
         setTotalItemsCount(totalItemsCount)
       }
       else{
+        let i = 0
+        for(let value of usersResponse.items){
+          const userDetails = await fetchUserDetailsData(value.url, apiKey)
+          value = {
+            ...value,
+            name: userDetails.name,
+            bio: userDetails.bio,
+            location: userDetails.location,
+            folowing : userDetails.following
+          }
+          usersResponse.items[i] = value
+          i++
+        }
         userData = usersResponse
         setTotalItemsCount((current) => (parseInt(current) + userData.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-        if(usersResponse.items.length > 0) setUsersList(usersResponse.items)
+        if(userData.items.length > 0) setUsersList(userData.items)
         return true
       }
   }
 
-  const getReposData = async (querry: String = exampleSearchText) =>{
+  const getReposData = async (querry: string = exampleSearchText) =>{
       let reposData: GitData
       const reposResponse = await fetchReposData(querry, apiKey)
-      if(reposResponse === 'error'){
+      if(reposResponse.message === 'Bad credentials' || reposResponse.message === 'Not Found'){
         console.log('Error with fetching repos')
         setTotalItemsCount(totalItemsCount)
       }
@@ -126,12 +139,21 @@ const App = () => {
            resultsCount={totalItemsCount} 
           />
           <ScrollView>
-            {mixedList.map( (element) => {
-              
+            {mixedList.map( (el: any) => {
+                
                 return(
-                  <UserListElement 
-                    item={element}
+                  el.type !== undefined ?
+                    <UserListElement 
+                    item={el}
+                    key={el.id}
                   />
+                  :<RepoListElement
+                    item={el}
+                    key={el.id}
+                   />
+                  
+                  
+                  
                  
                 )
             } )}
