@@ -6,12 +6,11 @@ import {
     TouchableOpacity,
     Image,     
 } from "react-native";
-import RepoSvg from '../assets/Vector.svg'
-import StarSvg from '../assets/star.svg'
 
 interface Props {
     resultsCount?: String,
     item: ApiUserItem
+    onPress?: () => void
 }
 
 interface ApiUserItem {
@@ -24,16 +23,16 @@ interface ApiUserItem {
   }
 
 const UserListElement = (props: Props) => {
-    console.log(props.item)
     return(
         <TouchableOpacity 
             style={{ 
-            minHeight:70,
-            borderBottomWidth:1,
-            borderBottomColor:'#C4C4C4',
-            borderBottomLeftRadius:25,
-            borderBottomRightRadius:25,
+                minHeight:70,
+                borderBottomWidth:1,
+                borderBottomColor:'#C4C4C4',
+                borderBottomLeftRadius:25,
+                borderBottomRightRadius:25,
             }}
+            onPress={props.onPress}
         > 
             <View style={{
                 flexDirection:'row',
@@ -67,23 +66,29 @@ const UserListElement = (props: Props) => {
                     <Text style={styles.repoDescription}>
                     {props.item.login}
                     </Text>
+                    {props.item.bio !== null && 
+                        <View style={{ flexDirection:'row', alignItems:'center', maxWidth:'95%', marginBottom:'1%'}}>
+                            <Text style={styles.userBioText}>
+                            {props.item.bio}
+                            </Text>
+                        </View>
+                    }
 
-                    <View style={{
-                        flexDirection:'row',
-                        width:'95%',
-                        flexWrap:'wrap'
-                    }}
-                    >  
-                    <View style={{ flexDirection:'row', alignItems:'center', maxWidth:'15%', marginRight:'2%'}}>
-                        <StarSvg /> 
-                        <Text style={styles.repoInfoText}>
-                        {props.item.location}
-                        </Text>
-                    </View>
+                    {props.item.location !== null && 
+                        <View style={{
+                            flexDirection:'row',
+                            width:'95%',
+                            flexWrap:'wrap'
+                        }}
+                        > 
+                            <View style={{ flexDirection:'row', alignItems:'center', maxWidth:'95%', marginRight:'2%'}}>
+                                <Text style={styles.userInfoText}>
+                                {props.item.location}
+                                </Text>
+                            </View>
 
-                
-
-                    </View>
+                        </View>
+                    } 
                 </View>
             </View>
             
@@ -98,16 +103,23 @@ const styles = StyleSheet.create({
     textAlign:'left'
   },
   repoDescription: {
-    color:'##6F7781',
+    color:'#6F7781',
     fontFamily:'Roboto',
     fontWeight:'500',
     marginBottom:10
   },
-  repoInfoText: {
+  userInfoText: {
     fontFamily:'Segoe UI',
     marginLeft:2,
     fontSize:12,
-    color:'##6F7781',
+    color:'#6F7781',
+    fontWeight:'800'
+  },
+  userBioText: {
+    fontFamily:'Segoe UI',
+    marginLeft:2,
+    fontSize:12,
+    color:'#000',
     fontWeight:'800'
   },
   dot:{

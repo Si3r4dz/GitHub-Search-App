@@ -1,126 +1,33 @@
 import React, {type PropsWithChildren, useState, useEffect} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   useColorScheme,
-  View,
-  TouchableOpacity,
-  ActivityIndicator
 } from 'react-native';
 
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
 
-import {fetchUserData, fetchReposData, fetchUserDetailsData} from './src/utils/gitApi'
-import SearchBar from './src/components/searchBar';
-import ResultsBar from './src/components/resultsBar';
-import RepoListElement from './src/components/repoListElement';
-import UserListElement from './src/components/userListElement';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Home from './src/Views/Home';
+import UserView from './src/Views/UserView';
 
 
 const App = () => {
+  type RootStackParamList = {
+    Home: undefined, 
+    UserView: { name: string }; 
+  };
   const isDarkMode = useColorScheme() === 'dark';
-  const [searchText, setSearchText] = useState('')
-  const [usersList, setUsersList ] = useState([])
-  const [reposList, setReposList ] = useState([])
-  const [mixedList, setMixedList ] = useState([])
-  const [totalItemsCount, setTotalItemsCount] = useState('0') 
-  const apiKey = ''
-  const exampleSearchText: string = 'elPassion'
+  const Stack = createNativeStackNavigator<RootStackParamList>();
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
-
-  interface GitData {
-    total_count : number,
-    items:[],
-    incomplete_results: boolean,
-  }
-  interface element {
-      id: number
-  }
-
-
-  const mixResults = () => {
-    let oneArray = usersList.concat(reposList)
-    oneArray = oneArray.sort((a: element, b: element) =>{
-        return a.id - b.id;
-    })
-    setMixedList(oneArray)
-  }
-  
-
-  const getUserData = async (querry: string = exampleSearchText) =>{
-      let userData: GitData
-      const usersResponse = await fetchUserData(querry, apiKey)
-      if(usersResponse?.message === 'Bad credentials' || usersResponse?.message === 'Not Found'){
-        console.log('Error with fetching users')
-        setTotalItemsCount(totalItemsCount)
-      }
-      else{
-        let i = 0
-        for(let value of usersResponse.items){
-          const userDetails = await fetchUserDetailsData(value.url, apiKey)
-          value = {
-            ...value,
-            name: userDetails.name,
-            bio: userDetails.bio,
-            location: userDetails.location,
-            folowing : userDetails.following
-          }
-          usersResponse.items[i] = value
-          i++
-        }
-        userData = usersResponse
-        setTotalItemsCount((current) => (parseInt(current) + userData.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-        if(userData.items.length > 0) setUsersList(userData.items)
-        return true
-      }
-  }
-
-  const getReposData = async (querry: string = exampleSearchText) =>{
-      let reposData: GitData
-      const reposResponse = await fetchReposData(querry, apiKey)
-      if(reposResponse.message === 'Bad credentials' || reposResponse.message === 'Not Found'){
-        console.log('Error with fetching repos')
-        setTotalItemsCount(totalItemsCount)
-      }
-      else{
-        reposData = reposResponse
-        setTotalItemsCount((current) => (parseInt(current) + reposData.total_count).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-        if(reposResponse.items.length > 0) setReposList(reposResponse.items)
-        return true
-      }
-  }
-
-  useEffect(() => {
-    setTotalItemsCount('0')
-    getUserData()
-    getReposData()
-  }, []) 
-  
-  useEffect(() => {
-    const fetchTimeOut = setTimeout(() => {
-        if (searchText.length > 2){
-          setTotalItemsCount('0')
-          getUserData(searchText)
-          getReposData(searchText)
-      }
-    }, 200)
-    return () => clearTimeout(fetchTimeOut)
-  }, [searchText])
-
-  useEffect(()=>{
-    if(usersList.length > 0 || reposList.length > 0){
-      mixResults()
-    }
-  },[usersList, reposList])
   
 
   return (
@@ -131,33 +38,13 @@ const App = () => {
           translucent={false}
           hidden={false}
         />
-        <SearchBar 
-          placeholder='Search'
-          onChangeInputText={setSearchText}
-        /> 
-          <ResultsBar
-           resultsCount={totalItemsCount} 
-          />
-          <ScrollView>
-            {mixedList.map( (el: any) => {
-                
-                return(
-                  el.type !== undefined ?
-                    <UserListElement 
-                    item={el}
-                    key={el.id}
-                  />
-                  :<RepoListElement
-                    item={el}
-                    key={el.id}
-                   />
-                  
-                  
-                  
-                 
-                )
-            } )}
-          </ScrollView>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name='Home' component={Home} options={{ animation:'fade', headerShown: false}} />
+            <Stack.Screen name='UserView' component={UserView} options={{ animation:'fade', headerShown: false}} />
+
+          </Stack.Navigator>
+        </NavigationContainer>
     </SafeAreaView>
   );
 };
