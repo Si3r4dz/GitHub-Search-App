@@ -11,13 +11,10 @@ import {
 import SearchBar from '../components/searchBar';
 import FollowersSvg from '../assets/followers.svg'
 
-const UserView = ({route}: {route: any}) => {
-
-    const [searchText, setSearchText] = useState('')
-
+const UserView = ({route, navigation}: {route: any, navigation: any}) => {
 
     const handlerSearchTextchanged = (text: string) => {
-        console.log(text)
+       // navigation.pop()
     }
 
   return (

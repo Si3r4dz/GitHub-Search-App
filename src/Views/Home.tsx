@@ -16,6 +16,7 @@ import ResultsBar from '../components/resultsBar';
 import RepoListElement from '../components/repoListElement';
 import UserListElement from '../components/userListElement';
 import { getUserData, getReposData } from '../utils/getData';
+import { DEFAULT_SEARCH_VALUE } from '@env';
 
 
 const Home = ( {navigation}: {navigation: any}) => {
@@ -27,7 +28,6 @@ const Home = ( {navigation}: {navigation: any}) => {
   const [isLoading, setIsLoading ] = useState(false)
   const [mixArrays, setMixArrays] = useState(false)
   const [totalItemsCount, setTotalItemsCount] = useState('0') 
-  const exampleSearchText: string = 'Si3r4dz'
 
   interface element {
       id: number
@@ -42,7 +42,7 @@ const Home = ( {navigation}: {navigation: any}) => {
     setMixArrays(false)
   }
   
-  const getData = async (querry: string = exampleSearchText, signal?: AbortSignal )=>{
+  const getData = async (querry: string = DEFAULT_SEARCH_VALUE, signal?: AbortSignal )=>{
       setReposList([])
       setUsersList([])
       setMixedList([])
@@ -60,6 +60,7 @@ const Home = ( {navigation}: {navigation: any}) => {
   
 
   useEffect(() => {
+    setIsLoading(true)
     setTotalItemsCount('0')
     getData()
   }, []) 
