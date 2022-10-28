@@ -1,4 +1,4 @@
-# elPassion
+# GitHub Search App
 
 Simple react-native app using github api to display users and repositories which are specifiyed in search field.
 
